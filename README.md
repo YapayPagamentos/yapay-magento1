@@ -1,0 +1,101 @@
+# Magento Extension for [Yapay Intermediador de Pagamentos](https://www.yapay.com.br/) 
+
+Para disponibilizar a API de Pagamento da **Yapay** como facilitador de pagamento na plataforma Magento, basta acessar o _Magento Connect Manager_ de sua loja e instalar o módulo disponível no repositório Magento Connect ou baixar o pacote disponível no site institucional da Yapay.
+
+> **Instalação do Módulo Magento versão 1.9.x**
+
+
+Existem duas formas de realizar a instalação do módulo Magento:
+
+1. Instalação através da Chave da Extensão (**_Extension Key_**)
+
+2. Instalação através do Pacote da Extensão
+
+
+> 1- Instalação através do Pacote da Extensão
+
+
+Para instalar o módulo é necessário baixar o arquivo através da página a seguir:
+
+[Magento](/download/yapay/magento/Yapay_Intermediador-0.2.0.tgz)
+
+[GitHub Magento1.x](https://github.com/YapayPagamentos/yapay-magento1)
+
+
+Acesse o _Magento Connect Manager_ de sua loja Magento (menu **Sistema > Conexão Magento > Gerenciador de Conexão Magento**), e clique no botão **Selecionar arquivo** da opção _Upload Package File_, conforme imagem abaixo. Selecione o pacote da Yapay baixado anteriormente, em seguida clique em **Upload**.
+
+
+![Magento Connect, instalação](/images/magento/install_magento_4.png "Magento Connect, instalação")
+
+Após a instalação do pacote, será exibido um log semelhante à imagem abaixo:
+
+![Magento Connect, instalação](/images/magento/install_magento_5.png "Magento Connect, instalação")
+
+Clique no botão **Refresh** e verifique se o módulo **Yapay_Intermediador** é listado nos módulos instalados, conforme abaixo:
+
+![Magento Connect, instalação](/images/magento/install_magento_6.png "Magento Connect, instalação")
+
+Clique em **Return to Admin** para voltar à área administrativa de sua loja virtual.
+
+O próximo passo é configurar o módulo (veja o item 3).
+
+
+> 2- Configuração do Módulo
+
+Para utilizar o módulo da API de Pagamento da Yapay é necessário realizar duas etapas:
+
+1. Configurar sua loja virtual para disponibilizar os campos necessários para a integração
+
+2. Configurar o módulo de pagamento Yapay
+
+
+> 2.1- Configuração dos Campos de Integração do Magento
+
+Na integração com a API de Pagamento da Yapay é necessário o envio de alguns campos obrigatórios, onde será necessário disponibilizar estes campos na plataforma Magento.
+
+Para a configuração do módulo, acesse o menu **Sistema > Configuração**, e no menu lateral esquerdo procure por **Configuração do Cliente** (faz parte do sub-menu **Clientes**). Ao clicar no link, serão listados as opções para configuração do cliente na loja virtual, procure pela aba **Opções de Nome e Endereço** para configurar os campos no Magento.
+
+Após abrir a aba **Opções de Nome e Endereço**, encontre a opção **Número de linhas em um endereço de rua** e altere o valor para **4**, onde serão disponibilizados 4 campos para cadastro do endereço, sendo respectivamente o logradouro, número, complemento e bairro.
+
+Após alterar a opção acima, encontre a opção **Exibir número fiscal** e altere a opção para **Obrigatório**, assim será exibida a opção para o cliente informar o CPF no cadastro ou finalização da compra.
+
+Segue abaixo imagem com a tela de configuração dos campos na plataforma Magento:
+
+![Magento Connect, instalação](/images/magento/install_magento_7.png "Magento Connect, instalação")
+
+
+> 2.2- Configuração do Módulo de Pagamento Yapay
+
+Para a configuração do módulo, acesse o menu **Sistema > Configuração**, e no menu lateral esquerdo procure por **Métodos de Pagamento** (faz parte do sub-menu **Vendas**). Ao clicar no link, será listado todos os métodos de pagamento disponíveis, procure pela aba **Yapay – Transparente** para habilitar e configurar o método de pagamento.
+
+Segue abaixo imagem com a tela de configuração:
+
+![Magento Connect, instalação](/images/magento/install_magento_8.png "Magento Connect, instalação")
+
+
+> 2.3- Opções de configuração Yapay:
+
+
+**Ativado:** opção para habilitar a Yapay na finalização de compra
+
+**Título:** título que aparecerá para seu cliente na hora de escolher a forma de pagamento
+
+**Status dos Novos Pedidos:** status de cada novo pedido ao ser enviado para a Yapay
+
+**Token:** chave gerada no seu painel de administração do Yapay, localizado no menu **Perfil da Conta > Minha Conta > Dados da Conta**
+
+**Gerar Fatura automaticamente para pedidos com produtos virtuais:** caso esteja em “Sim”, os pedidos que contiverem ao menos um (1) produto virtual serão automaticamente marcados como “concluídos”, após o recebimento automático do pagamento. Isto se dá em função da não existência da etapa de “Envio” para estes produtos
+
+**Quantidade Máxima de Parcelas:** representa a quantidade máxima de parcelas oferecida pela loja virtual, utilizando a Yapay
+
+**Meios de Pagamento Disponíveis:** Meios de pagamento que serão exibidos para o consumidor ao finalizar a compra pelo Yapay
+
+**Parcelas sem Acréscimo:** as parcelas selecionadas serão exibidas como sem acréscimo ao consumidor quando o mesmo finalizar a compra através da Yapay. Esta opção somente representa a visualização no checkout da loja virtual, onde também é necessário configurar na área administrativa da Yapay (menu **Perfil da Conta > Configurações > Parcelamento de Vendas**)
+
+**Taxa de Acréscimo:** representa o percentual de acréscimo cobrado pelo Yapay
+
+**Prefixo do Pedido:** campo utilizado para concatenar com o número do pedido da loja ao integrar com a Yapay
+
+**Ordem de exibição:** ordem de exibição, caso exista mais de um método de pagamento
+
+**Ambiente de Teste (Sandbox):** ambiente utilizado para que a loja possa realizar testes de integração – muita atenção para não manter este ambiente habilitado quando a loja estiver efetivamente vendendo

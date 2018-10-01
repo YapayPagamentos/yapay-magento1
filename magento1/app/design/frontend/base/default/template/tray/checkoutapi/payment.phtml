@@ -1,0 +1,91 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to suporte@tray.net.br so we can send you a copy immediately.
+ *
+ * @category   Tray
+ * @package    Tray_CheckoutApi
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
+?>
+<?php
+    $this->getPayment(); 
+    $title = "";
+    $descriptionPaymentTC = "";
+    switch ($this->getStatusId()){
+        case '4': 
+        case '5':
+        case '87':
+                $title = "Sua compra foi finalizada com Yapay Intermediador";
+                $descriptionPaymentTC = "Sua compra foi finalizada através do Yapay Intermediador.<br/>Estamos aguardando a confirmação do pagamento.";
+            break;
+        case '6':
+                $title = "Sua compra foi finalizada com Yapay Intermediador";
+                $descriptionPaymentTC = "Sua compra foi finalizada com sucesso através do Yapay Intermediador.";
+            break;
+        case '7':
+        case '89':
+                $title = "Ocorreu um problema ao finalizar a compra pelo Yapay Intermediador";
+                $descriptionPaymentTC = "Ocorreu um problema ao finalizar a compra através do Yapay Intermediador.";
+            break;
+        case '88':
+                $title = "Sua compra foi finalizada com Yapay Intermediador";
+                $descriptionPaymentTC = "Sua compra foi finalizada através do Yapay Intermediador.<br/>Estamos aguardando a confirmação do pagamento.";
+            break;
+    }
+?>
+
+<div class="page-head">
+    <h2 class="sub-title"><?php echo $title;?></h2>
+</div>
+<div>
+        <table style="width:100%;">
+            <tr>
+                <td style="width:100%">
+                    <?php echo $descriptionPaymentTC;?><br/><br/>
+                    <strong>Dados do Pedido:</strong><br/>
+                    Seu n&uacute;mero de pedido &eacute;: <strong><?php echo $this->getOrderNumber()?></strong><br />
+                    N&uacute;mero da transa&ccedil;&atilde;o no Yapay Intermediador: <strong><?php echo $this->getTransactionId()?></strong><br />
+                    Meio de Pagamento: <strong>Yapay Intermediador - <?php echo $this->getPaymentMethodName()?></strong><br />
+                    Situa&ccedil;&atilde;o da transa&ccedil;&atilde;o no Yapay Intermediador: <strong><?php echo $this->getStatusName()?></strong><br /><br />
+                    
+                    <?php
+                    switch ($this->getPaymentMethodId()) {
+                            case "6":
+                    ?>
+                    <button onclick="window.open('<?php echo $this->getUrlPayment()?>');" class="button btn-proceed-checkout btn-checkout" title="Imprimir Boleto" type="button"><span><span>Imprimir Boleto</span></span></button><br />
+                    <?php
+                        break;
+                            case "7":
+                            case "14":
+                            case "21":
+                            case "22":
+                            case "23":
+                    ?>
+                    <button onclick="window.open('<?php echo $this->getUrlPayment()?>');" class="button btn-proceed-checkout btn-checkout" title="Efetuar Transfer&ecirc;ncia Online" type="button"><span><span>Efetuar Transfer&ecirc;ncia Online</span></span></button><br />
+                    <?php
+                        break;
+                    }
+                    ?>
+                    <br />
+                    <br />
+                    <img src="<?php echo $this->getSkinUrl('tray/checkoutapi/images/BannerYapayIntermediador890px.png'); ?>" />
+                </td>
+            </tr>
+        </table>
+</div>
+
+<script>
+    jQuery(document).FingerPrint({token_account: '<?php echo $this->getTokenAccount()?>',
+                               order_number: '<?php echo $this->getOrderNumberTc()?>',
+                               production: 'true'});
+</script>

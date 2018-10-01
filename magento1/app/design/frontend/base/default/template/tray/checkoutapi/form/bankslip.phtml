@@ -1,0 +1,67 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to suporte@tray.net.br so we can send you a copy immediately.
+ *
+ * @category   Tray
+ * @package    Tray_CheckoutApi
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
+?>
+<fieldset class="form-list">
+    <?php 
+          $_code = $this->getMethodCode();
+          $_standardPD = Mage::getSingleton('checkoutapi/bankslip');
+          
+          $totals = Mage::getSingleton('checkout/session')->getQuote()->collectTotals();  
+          //$shippingAmount = Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingAmount();  
+                    
+    ?>
+    <style>
+        ul li.tcbPaymentMethod{
+            float: left;
+            padding: 5px;
+            width: 125px;
+            height: 60px;
+        }
+        ul li input{
+            float: left;
+            margin-right: 5px;
+        }
+        ul li img.tcbPaymentFlag{
+            float: left;
+            width: 76px;
+            height: 49px;
+            background-repeat: no-repeat;
+            border-radius: 3px;
+            background-color: #f3f3f3;
+            box-shadow: 1px 1px 2px #ececec;
+        }
+        
+    </style>
+    <ul id="payment_form_<?php echo $_code ?>" style="display:none">
+        
+        <li class="forma_pagamento" style="float:left;;">
+            <ul>
+                <li>
+                    <input type="hidden" id="tcbPaymentMethod" name="payment[traycheckout_payment_code_bankslip]" class="required-entry" value="6"/>
+                    <ul>
+                        <li class="tcbPaymentMethod" >                            
+                            <img src="<?php echo $this->getSkinUrl('tray/checkoutapi/images/boleto-flag.svg') ?>" class="tcbPaymentFlag">
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>        
+    </ul>
+    
+</fieldset>

@@ -21,7 +21,7 @@
 <config>
     <modules>
         <Tray_CheckoutApi>
-            <version>1.3.3</version>
+            <version>1.3.5</version>
         </Tray_CheckoutApi>
     </modules>
     <global>
@@ -48,6 +48,13 @@
                 </entities>
             </checkoutapi_eav>
         </models>
+        <controllers>
+            <Mage_Checkout>
+                <rewrite>
+                    <onepage>Tray_CheckoutApi_OnepageController</onepage>
+                </rewrite>
+            </Mage_Checkout>
+        </controllers>
         <resources>
             <checkoutapi_setup>
                 <setup>
@@ -68,16 +75,21 @@
                 </connection>
             </checkoutapi_read>
         </resources>
-	<blocks>
+        <blocks>
             <checkoutapi>
                 <class>Tray_CheckoutApi_Block</class>
             </checkoutapi>
+            <checkout>
+                <rewrite>
+                    <onepage_success>Tray_CheckoutApi_Block_Onepage_Success</onepage_success>
+                </rewrite>
+            </checkout>
         </blocks>
-	<helpers>
+        <helpers>
             <checkoutapi>
                 <class>Tray_CheckoutApi_Helper</class>
             </checkoutapi>
-	</helpers>
+        </helpers>
         <events>
             <checkout_onepage_controller_success_action>
                 <observers>
@@ -117,7 +129,7 @@
             </sales_order_shipment_save_after-->
         </events>
         <fieldsets>
-             <sales_convert_quote_payment>
+            <sales_convert_quote_payment>
                 <traycheckout_transaction_id>
                     <to_order_payment>*</to_order_payment>
                 </traycheckout_transaction_id>
@@ -145,13 +157,13 @@
                 <traycheckout_typeful_line>
                     <to_order_payment>*</to_order_payment>
                 </traycheckout_typeful_line>
-             </sales_convert_quote_payment>
+            </sales_convert_quote_payment>
         </fieldsets>
     </global>
     <frontend>
         <secure_url>
             <checkoutapi>/checkoutapi/standard</checkoutapi>
-        </secure_url>   
+        </secure_url>
         <routers>
             <checkoutapi>
                 <use>standard</use>
@@ -160,6 +172,13 @@
                     <frontName>checkoutapi</frontName>
                 </args>
             </checkoutapi>
+            <checkout>
+                <args>
+                    <modules>
+                        <Tray_CheckoutApi before="Mage_Checkout">Tray_CheckoutApi</Tray_CheckoutApi>
+                    </modules>
+                </args>
+            </checkout>
         </routers>
         <translate>
             <modules>
@@ -187,37 +206,37 @@
                     </files>
                 </checkoutapi>
             </modules>
-        </translate>        
+        </translate>
         <layout>
             <updates>
                 <traycheckoutapi>
                     <file>tray_checkoutapi.xml</file>
                 </traycheckoutapi>
             </updates>
-        </layout>        
+        </layout>
     </adminhtml>
     <default>
         <payment>
             <traycheckoutapi>
-                  <active>0</active>
-                  <model>Tray_CheckoutApi_Model_Standard</model>
-                  <order_status>pending</order_status>
-                  <title>Yapay Intermediador - Cartão de Crédito</title>
-                  <allowspecific>1</allowspecific>
+                <active>0</active>
+                <model>Tray_CheckoutApi_Model_Standard</model>
+                <order_status>pending</order_status>
+                <title>Yapay Intermediador - Cartão de Crédito</title>
+                <allowspecific>1</allowspecific>
             </traycheckoutapi>
             <traycheckoutapi_bankslip>
-                  <active>0</active>
-                  <model>Tray_CheckoutApi_Model_Bankslip</model>
-                  <order_status>pending</order_status>
-                  <title>Yapay Intermediador - Boleto Bancário</title>
-                  <allowspecific>1</allowspecific>
+                <active>0</active>
+                <model>Tray_CheckoutApi_Model_Bankslip</model>
+                <order_status>pending</order_status>
+                <title>Yapay Intermediador - Boleto Bancário</title>
+                <allowspecific>1</allowspecific>
             </traycheckoutapi_bankslip>
             <traycheckoutapi_onlinetransfer>
-                  <active>0</active>
-                  <model>Tray_CheckoutApi_Model_Onlinetransfer</model>
-                  <order_status>pending</order_status>
-                  <title>Yapay Intermediador - Transferência Online</title>
-                  <allowspecific>1</allowspecific>
+                <active>0</active>
+                <model>Tray_CheckoutApi_Model_Onlinetransfer</model>
+                <order_status>pending</order_status>
+                <title>Yapay Intermediador - Transferência Online</title>
+                <allowspecific>1</allowspecific>
             </traycheckoutapi_onlinetransfer>
         </payment>
         <checkoutapi>

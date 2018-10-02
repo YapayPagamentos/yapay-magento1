@@ -46,8 +46,7 @@ class Tray_CheckoutApi_Model_Onlinetransfer extends Tray_CheckoutApi_Model_Stand
      */
     public function getOrderPlaceRedirectUrl()
     {
-        return Mage::getUrl('checkoutapi/standard/payment', array('_secure' => true, 'type' => 'onlinetransfer'));
-        //return Mage::getUrl('checkoutapi/redirect');
+        return Mage::getUrl('checkout/onepage/success');
     }
     
     

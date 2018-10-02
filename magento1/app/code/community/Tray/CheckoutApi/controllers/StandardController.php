@@ -27,9 +27,20 @@ class Tray_CheckoutApi_StandardController extends Mage_Core_Controller_Front_Act
 
     
     public function paymentAction()
-    {             
-       $this->loadLayout();
-       $this->renderLayout();       
+    {
+        $this->loadLayout();
+        $block = $this->getLayout()->getBlock('google_analytics');
+
+
+        if ($block) {
+            /** @var Mage_Checkout_Model_Session $session */
+            $session = Mage::getSingleton('checkout/session');
+            if ($session->getLastRealOrder()) {
+                $block->setOrderIds([$session->getLastRealOrder()->getId()]);
+            }
+        }
+
+        $this->renderLayout();
     }
     
     public function returnAction()
@@ -118,7 +129,7 @@ class Tray_CheckoutApi_StandardController extends Mage_Core_Controller_Front_Act
      *  @return	  Mage_Sales_Model_Order
      */
     public function getOrder() {
-        
+
         if ($this->_order == null) {
             
         }
@@ -149,7 +160,7 @@ class Tray_CheckoutApi_StandardController extends Mage_Core_Controller_Front_Act
      */
     public function redirectAction() 
     {
-        
+
         $type = $this->getRequest()->getParam('type', false);
         
         $session = Mage::getSingleton('checkout/session');
@@ -243,7 +254,6 @@ class Tray_CheckoutApi_StandardController extends Mage_Core_Controller_Front_Act
             }else{
                 Mage::log('Error : '. curl_error($ch), null, 'traycheckout.log');
             }
-            
             Mage::app()->getResponse()->setRedirect('checkoutapi/standard/error', array('_secure' => true , 'descricao' => urlencode(utf8_encode("Erro de execução!")),'codigo' => urlencode("999")))->sendResponse();
             echo "Erro na execucao!";
             curl_close ( $ch );

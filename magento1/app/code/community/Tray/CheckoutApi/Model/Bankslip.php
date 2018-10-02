@@ -47,8 +47,7 @@ class Tray_CheckoutApi_Model_Bankslip extends Tray_CheckoutApi_Model_Standard
      */
     public function getOrderPlaceRedirectUrl()
     {
-        return Mage::getUrl('checkoutapi/standard/payment', array('_secure' => true, 'type' => 'bankslip'));
-        //return Mage::getUrl('checkoutapi/redirect');
+        return Mage::getUrl('checkout/onepage/success');
     }
     
     

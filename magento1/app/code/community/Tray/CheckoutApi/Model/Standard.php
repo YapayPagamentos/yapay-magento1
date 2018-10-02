@@ -61,8 +61,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
      */
     public function getOrderPlaceRedirectUrl()
     {
-        return Mage::getUrl('checkoutapi/standard/payment', array('_secure' => true, 'type' => 'standard'));
-        //return Mage::getUrl('checkoutapi/redirect');
+        return Mage::getUrl('checkout/onepage/success');
     }
     
      /**
@@ -158,7 +157,6 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
                 break;
         }
 
-        
         return $this;
     }
     
@@ -205,6 +203,35 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
          */
         return ($numSum % 10 == 0);
     }
+    
+    public function validadeCvv($cvv)
+    {
+        $cvv = intval($cvv);
+        $cvv = strval($cvv);
+        if(strlen($cvv) == 3) {
+            return true;
+        }
+        return false;
+    }
+
+    public function validadeMonthYear($month, $year)
+    {
+        if(strlen($month) == 1) {
+            $date_expiration = '01-0' . $month . '-' . $year;
+        }
+        else {
+            $date_expiration = '01-' . $month . '-' . $year;
+        }
+        $current_date = '01' . '-' . date("m").'-'.date("Y") ;
+
+        if(strtotime($current_date) < strtotime($date_expiration))
+        {
+            return true;
+        }
+
+
+        return false;
+    }
 
     public function validate()
     {
@@ -215,7 +242,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         
         $shippingAddress = $quote->getShippingAddress();
         $billingAddress = $quote->getBillingAddress();
-        
+
         // Verificação se consta o nome vazio do consumidor
         Mage::log('Validate - Name Data: '. $billingAddress->getData("firstname")." ".$billingAddress->getData("lastname"), null, 'traycheckout.log');
         if (str_replace(" ","",$billingAddress->getData("firstname")." ".$billingAddress->getData("lastname")) == "") {
@@ -292,8 +319,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
                 $errorMsg .= "Estado em branco ou inválido!!\n";
             }
         }
-        //var_dump($shippingAddress->getRegionCode());
-        
+
         $currency_code = $this->getQuote()->getBaseCurrencyCode();
         if (!$currency_code){
             $session = Mage::getSingleton('adminhtml/session_quote');
@@ -302,53 +328,69 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         if (!in_array($currency_code,$this->_allowCurrencyCode)) {
             Mage::throwException(Mage::helper('checkoutapi')->__('A moeda selecionada ('.$currency_code.') não é compatível com o Yapay Intermediador'));
         }
-        
-        $ccType = $quote->getPayment()->getData('cc_type');
-        //$ccNumber = $quote->getPayment()->getData('cc_number');
-        $ccNumber = str_replace(" ","",$quote->getPayment()->getData('cc_number'));
-        //var_dump($quote->getPayment()->getData());
-        if(!in_array($ccType, array("2","6","7","14","22","23"))){
-            if ($this->validateCcNum($ccNumber)) {
-                switch ($ccType){
-                    // Validação Visa
-                    case "3":
-                        if (!preg_match('/^4([0-9]{12}|[0-9]{15})$/', $ccNumber)) {
-                            $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number')."\n";
-                        }
-                        break;
-                    // Validação Master
-                    case "4":
-                        if (!preg_match('/^5([1-5][0-9]{14})$/', $ccNumber)) {
-                            $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number')."\n";
-                        }
-                        break;
-                    // Validação American Express
-                    case "5":
-                        if (!preg_match('/^3[47][0-9]{13}$/', $ccNumber)) {
-                            $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number')."\n";
-                        }
-                        break;
-                    // Validação Discovery
-                    case "15":
-                        if (!preg_match('/^6011[0-9]{12}$/', $ccNumber)) {
-                            $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number')."\n";
-                        }
-                        break;
-                    // Validação JCB
-                    case "19":
-                        if (!preg_match('/^(3[0-9]{15}|(2131|1800)[0-9]{11})$/', $ccNumber)) {
-                            $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number')."\n";
-                        }
-                        break;
+
+
+        if ($quote->getPayment()->getData('method') == 'traycheckoutapi') {
+
+            // Validação CVV do cartão
+            $cvv = $quote->getPayment()->getData('cc_cid');
+            Mage::log('Validate - CVV Data: '. $cvv, null, 'traycheckout.log');
+            if (!$this->validadeCvv($cvv)) {
+                $errorMsg .= "CVV em branco ou inválido!!\n";
+            }
+
+            // Validação data de expiração do cartão
+            $month = $quote->getPayment()->getData('cc_exp_month');
+            $year = $quote->getPayment()->getData('cc_exp_year');
+            Mage::log('Validate - Date Expiration: '. $month . $year, null, 'traycheckout.log');
+            if (!$this->validadeMonthYear($month, $year)) {
+                $errorMsg .= "Data de Expiração do Cartão Invalida!!\n";
+            }
+
+            $ccType = $quote->getPayment()->getData('cc_type');
+            $ccNumber = str_replace(" ","",$quote->getPayment()->getData('cc_number'));
+            if (!in_array($ccType, array("2", "6", "7", "14", "22", "23"))) {
+                if ($this->validateCcNum($ccNumber)) {
+                    switch ($ccType) {
+                        // Validação Visa
+                        case "3":
+                            if (!preg_match('/^4([0-9]{12}|[0-9]{15})$/', $ccNumber)) {
+                                $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number') . "\n";
+                            }
+                            break;
+                        // Validação Master
+                        case "4":
+                            if (!preg_match('/^5([1-5][0-9]{14})$/', $ccNumber)) {
+                                $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number') . "\n";
+                            }
+                            break;
+                        // Validação American Express
+                        case "5":
+                            if (!preg_match('/^3[47][0-9]{13}$/', $ccNumber)) {
+                                $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number') . "\n";
+                            }
+                            break;
+                        // Validação Discovery
+                        case "15":
+                            if (!preg_match('/^6011[0-9]{12}$/', $ccNumber)) {
+                                $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number') . "\n";
+                            }
+                            break;
+                        // Validação JCB
+                        case "19":
+                            if (!preg_match('/^(3[0-9]{15}|(2131|1800)[0-9]{11})$/', $ccNumber)) {
+                                $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number') . "\n";
+                            }
+                            break;
+                    }
+                } else {
+                    $errorMsg = Mage::helper('payment')->__('Invalid Credit Card Number') . "\n";
                 }
             }
-            else {
-                $errorMsg = Mage::helper('payment')->__('Invalid Credit Card Number')."\n";
-            }
-        }
-        if($ccType == "2"){
-            if (!preg_match('/^3(6|8)[0-9]{12}|^3(00|01|02|03|04|05)[0-9]{11}$/', $ccNumber)) {
-                $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number')."\n";
+            if ($ccType == "2") {
+                if (!preg_match('/^3(6|8)[0-9]{12}|^3(00|01|02|03|04|05)[0-9]{11}$/', $ccNumber)) {
+                    $errorMsg .= Mage::helper('payment')->__('Invalid Credit Card Number') . "\n";
+                }
             }
         }
         
@@ -409,8 +451,6 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         $a = $isOrderVirtual ? $order->getBillingAddress() : $order->getShippingAddress();
         
         list($items, $totals, $discountAmount, $shippingAmount) = Mage::helper('checkoutapi')->prepareLineItems($order, false, false);
-
-        // $shipping_description = $order->getData('shipping_description');
 
         if ($order->getData('shipping_description') == NULL) {
             $shipping_description = "Produto Virtual";
@@ -548,7 +588,6 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         $xml = simplexml_load_string($res);
         $codeTc = "";
         $messageTc = "";
-        
         if($xml->message_response->message == "error"){
             if(!empty($xml->error_response->general_errors)){
                 $this->errorTypeErrorTrayCheckout = "G";
@@ -606,7 +645,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         //$params = str_replace($arrayp, $replace, $params);
         
         Mage::log('Data: '.  preg_replace($patterns, $replacements,$params), null, 'traycheckout.log');
-        
+
         curl_setopt ( $ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
         curl_setopt ( $ch, CURLOPT_POST, 1 );
         curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
@@ -621,10 +660,9 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
             }else{
                 Mage::log('Error : '. curl_error($ch), null, 'traycheckout.log');
             }
-            
             Mage::app()->getResponse()->setRedirect('checkoutapi/standard/error', array('_secure' => true , 'descricao' => urlencode(utf8_encode("Erro de execução!")),'codigo' => urlencode("999")))->sendResponse();
             echo "Erro na execucao!";
-            curl_close ( $ch );
+            curl_close($ch);
             exit();    
         }
         
@@ -643,7 +681,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
                 Mage::app()->getResponse()->setRedirect('checkoutapi/standard/error', array('_secure' => true , 'descricao' => urlencode(utf8_encode("Erro de conexão: " . curl_error($ch))),'codigo' => urlencode($httpCode)))->sendResponse();
         }
         curl_close($ch);
-        
+
         if($this->hasErrorTrayCheckout($res)){
             Mage::app()->getResponse()->setRedirect(Mage::getModel('core/url')->getUrl('checkoutapi/standard/error', array('_secure' => true , 'descricao' => urlencode($this->getErrorMessageTrayCheckout()),'codigo' => urlencode($this->getErrorCodeTrayCheckout()),'type' => $this->getTypeErrorTrayCheckout())))->sendResponse();
             exit();
@@ -651,6 +689,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         
         Mage::log('HttpCode: '. $httpCode, null, 'traycheckout.log');
         Mage::log('Response: '. $res, null, 'traycheckout.log');
+
         return $res;
     }
     
@@ -658,10 +697,14 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         
         $order = Mage::getModel('sales/order')->loadByIncrementId(str_replace($this->getConfigData('prefixo'),'',$transactionTc->order_number));
         $quote = Mage::getModel('sales/quote')->load($order->getData("quote_id"));
-        
+
         $quote->getPayment()->setData("traycheckout_transaction_id", $transactionTc->transaction_id);
         $quote->getPayment()->setData("traycheckout_token_transaction", $transactionTc->token_transaction);
         $quote->getPayment()->setData("traycheckout_url_payment", $transactionTc->payment->url_payment);
+
+        $url_payment = strval($transactionTc->payment->url_payment);
+        $quote->getPayment()->setAdditionalInformation('boleto_url', $url_payment)->setData();
+
         $quote->getPayment()->setData("traycheckout_typeful_line", $transactionTc->payment->linha_digitavel);
         
         $quote->getPayment()->save();
@@ -669,6 +712,9 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         $order->getPayment()->setData("traycheckout_transaction_id", $transactionTc->transaction_id);
         $order->getPayment()->setData("traycheckout_token_transaction", $transactionTc->token_transaction);
         $order->getPayment()->setData("traycheckout_url_payment", $transactionTc->payment->url_payment);
+        $order->getPayment()->setData("boleto_url", $transactionTc->payment->url_payment);
+        $url_payment = strval($transactionTc->payment->url_payment);
+        $order->getPayment()->setAdditionalInformation('boleto_url', $url_payment)->setData();
         $order->getPayment()->setData("traycheckout_typeful_line", $transactionTc->payment->linha_digitavel);
         $order->getPayment()->save();
         

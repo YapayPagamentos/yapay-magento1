@@ -38,21 +38,24 @@ $installer->startSetup();
 //$installer->addAttribute('quote_payment', 'traycheckout_typeful_line', array());
 // $installer->addAttribute('quote_payment', 'traycheckout_finger_print', array());
 
-if(!$installer->getConnection()->tableColumnExists('sales_flat_quote_payment', 'traycheckout_finger_print')) {
-    $installer->run("ALTER TABLE  {$this->getTable('sales_flat_quote_payment')} ADD  `traycheckout_finger_print` VARCHAR( 255 ) NULL DEFAULT NULL;");
+$quote_payment_table = $installer->getTable('sales_flat_quote_payment');
+$order_payment_table = $installer->getTable('sales_flat_order_payment');
+
+if(!$installer->getConnection()->tableColumnExists($quote_payment_table, 'traycheckout_finger_print')) {
+    $installer->run("ALTER TABLE  {$quote_payment_table} ADD  `traycheckout_finger_print` VARCHAR( 255 ) NULL DEFAULT NULL;");
 }
 
-if(!$installer->getConnection()->tableColumnExists('sales_flat_order_payment', 'traycheckout_finger_print')) {
-    $installer->run("ALTER TABLE  {$this->getTable('sales_flat_order_payment')} ADD  `traycheckout_finger_print` VARCHAR( 255 ) NULL DEFAULT NULL;");
+if(!$installer->getConnection()->tableColumnExists($order_payment_table, 'traycheckout_finger_print')) {
+    $installer->run("ALTER TABLE  {$order_payment_table} ADD  `traycheckout_finger_print` VARCHAR( 255 ) NULL DEFAULT NULL;");
 }
 
-if(!$installer->getConnection()->tableColumnExists('sales_flat_quote_payment', 'traycheckout_payment_method_name')) {
-    $installer->run("ALTER TABLE  {$this->getTable('sales_flat_quote_payment')} ADD  `traycheckout_payment_method_name` VARCHAR( 255 ) NULL DEFAULT NULL;");
+if(!$installer->getConnection()->tableColumnExists($quote_payment_table, 'traycheckout_payment_method_name')) {
+    $installer->run("ALTER TABLE  {$quote_payment_table} ADD  `traycheckout_payment_method_name` VARCHAR( 255 ) NULL DEFAULT NULL;");
 
 }
 
-if(!$installer->getConnection()->tableColumnExists('sales_flat_order_payment', 'traycheckout_payment_method_name')) {
-    $installer->run("ALTER TABLE  {$this->getTable('sales_flat_order_payment')} ADD  `traycheckout_payment_method_name` VARCHAR( 255 ) NULL DEFAULT NULL;");
+if(!$installer->getConnection()->tableColumnExists($order_payment_table, 'traycheckout_payment_method_name')) {
+    $installer->run("ALTER TABLE  {$order_payment_table} ADD  `traycheckout_payment_method_name` VARCHAR( 255 ) NULL DEFAULT NULL;");
 
 }
 

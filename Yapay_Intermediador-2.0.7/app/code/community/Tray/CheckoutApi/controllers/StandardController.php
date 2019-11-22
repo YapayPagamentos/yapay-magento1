@@ -223,7 +223,7 @@ class Tray_CheckoutApi_StandardController extends Mage_Core_Controller_Front_Act
         $dados_post = $this->getRequest()->getPost();
          
         $order_number_conf = utf8_encode(str_replace($this->getApi()->getConfigData('prefixo'),'',$dados_post['transaction']['order_number']));
-        $transaction_token= 'd0bfdd25316e7d2422219eafc196dcfb';//$dados_post['token_transaction'];
+        $transaction_token= $dados_post['token_transaction'];
 
         $dataRequest['token_transaction'] = $transaction_token;
         $dataRequest['token_account'] = trim($token);

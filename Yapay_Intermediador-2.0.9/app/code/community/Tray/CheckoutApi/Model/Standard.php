@@ -769,11 +769,11 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
             $respondeYapayGeneral = $xml->error_response->general_errors->general_error->message;
 
             if ($respondeYapayValidation == '') {
-                Mage::log('Error: Pedido não incluido na Yapay e incluido no Magento', null, 'traycheckout.log');
+                Mage::log('Error: Pedido incluido na Yapay com erro de processamento e incluido no Magento', null, 'traycheckout.log');
                 Mage::log('Error: Response Yapay: '. $respondeYapayGeneral, null, 'traycheckout.log');
                 
             } else if ($respondeYapayGeneral == '') {
-                Mage::log('Error: Pedido incluido na Yapay com erro de processamento', null, 'traycheckout.log');
+                Mage::log('Error: Pedido não incluido na Yapay com erro de processamento', null, 'traycheckout.log');
                 Mage::log('Error: Response Yapay: '. $respondeYapayValidation, null, 'traycheckout.log');
             }
 

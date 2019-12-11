@@ -488,7 +488,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         
 	    $sArr['token_account']= $this->getConfigData('token');
 	    // $sArr['transaction[free]']= "MAGENTO_API_v".(string) Mage::getConfig()->getNode()->modules->Tray_CheckoutApi->version;
-        $sArr['transaction[free]']= "MAGENTO_API_v2.0.8";
+        $sArr['transaction[free]']= "MAGENTO_API_v2.0.9";
         $sArr['transaction[order_number]']= $this->getConfigData('prefixo').$orderIncrementId;
 
 
@@ -632,8 +632,43 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         $xml = simplexml_load_string($res);
         $codeTc = "";
         $messageTc = "";
-        if($xml->message_response->message == "error"){
+
+        $orderId = Mage::getSingleton('checkout/session')->getLastRealOrderId();
+        // $order = Mage::getSingleton('sales/order')->loadByIncrementId($orderId);
+
+
+        $order = Mage::getModel('sales/order')->loadByIncrementId(str_replace($this->getConfigData('prefixo'),'',$orderId));
+
+        $frase = '';
+
+        $mensagemRetornoYapay = '';
+
+        if($xml->message_response->message == "error") {
+            if (empty($xml->additional_data->transaction_id)) {
+
+                $mensagemRetornoYapay = $xml->error_response->validation_errors->validation_error->message_complete;
+
+                $frase = 'Yapay Intermediador - Cancelado. Pedido cancelado automaticamente (a transação não foi criada). Motivo: '. $mensagemRetornoYapay;
+              
+                $order->addStatusToHistory(
+                    Mage_Sales_Model_Order::STATE_CANCELED, Mage::helper('checkoutapi')->__($frase), true
+                );
+
+                $order->sendOrderUpdateEmail(true, $frase);
+
+                $order->cancel();
+                
+                $order->save();
+
+            } 
+        }
+
+        if($xml->message_response->message == "error"){            
             if(!empty($xml->error_response->general_errors)){
+                $mensagemRetornoYapay = $xml->error_response->general_errors->general_error->message;
+                $order->addStatusHistoryComment('Yapay Intermediador - Pedido com pagamento não aceito. Motivo: '. $mensagemRetornoYapay);
+                $order->save();
+
                 $this->errorTypeErrorTrayCheckout = "G";
                 $qtdError = sizeof($xml->error_response->general_errors->general_error);
                 for($i = 0; $i < $qtdError; $i++){
@@ -696,7 +731,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         curl_setopt ( $ch, CURLOPT_POSTFIELDS, $params);
         curl_setopt ( $ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 );
 
-        
+
         if (!($res = curl_exec($ch))) {
             Mage::log('Error: Erro na execucao! ', null, 'traycheckout.log');
             if(curl_errno($ch)){
@@ -727,12 +762,28 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         curl_close($ch);
 
         if($this->hasErrorTrayCheckout($res)){
+            $xml = simplexml_load_string($res);
+            // var_dump($xml);
+            // die();
+            $respondeYapayValidation = $xml->error_response->validation_errors->validation_error->message_complete;
+            $respondeYapayGeneral = $xml->error_response->general_errors->general_error->message;
+
+            if ($respondeYapayValidation == '') {
+                Mage::log('Error: Pedido não incluido na Yapay e incluido no Magento', null, 'traycheckout.log');
+                Mage::log('Error: Response Yapay: '. $respondeYapayGeneral, null, 'traycheckout.log');
+                
+            } else if ($respondeYapayGeneral == '') {
+                Mage::log('Error: Pedido incluido na Yapay com erro de processamento', null, 'traycheckout.log');
+                Mage::log('Error: Response Yapay: '. $respondeYapayValidation, null, 'traycheckout.log');
+            }
+
             Mage::app()->getResponse()->setRedirect(Mage::getModel('core/url')->getUrl('checkoutapi/standard/error', array('_secure' => true , 'descricao' => urlencode($this->getErrorMessageTrayCheckout()),'codigo' => urlencode($this->getErrorCodeTrayCheckout()),'type' => $this->getTypeErrorTrayCheckout())))->sendResponse();
             exit();
         }
         
         Mage::log('HttpCode: '. $httpCode, null, 'traycheckout.log');
         Mage::log('Response: '. $res, null, 'traycheckout.log');
+
 
         return $res;
     }

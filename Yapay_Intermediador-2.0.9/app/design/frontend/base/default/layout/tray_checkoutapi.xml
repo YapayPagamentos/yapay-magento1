@@ -53,7 +53,8 @@
             </action>
             <action method="addJs">
                 <script>tray/checkoutapi/js/finger_print.js</script>
-            </action>            
+            </action>
+          
         </reference>
     </default>
 

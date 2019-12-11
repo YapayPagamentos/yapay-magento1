@@ -245,8 +245,9 @@ class Tray_CheckoutApi_StandardController extends Mage_Core_Controller_Front_Act
         curl_setopt ( $ch, CURLOPT_POSTFIELDS, $dataRequest);
         curl_setopt ( $ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 );
 
-        
+
         if (!($resposta = curl_exec($ch))) {
+
             Mage::log('Error: Erro na execucao! ', null, 'traycheckout.log');
             if(curl_errno($ch)){
                 Mage::log('Error '.curl_errno($ch).': '. curl_error($ch), null, 'traycheckout.log');

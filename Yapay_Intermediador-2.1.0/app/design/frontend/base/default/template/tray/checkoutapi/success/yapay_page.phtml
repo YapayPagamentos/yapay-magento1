@@ -136,7 +136,13 @@ switch ($this->getStatusId()){
 
 <div style="text-align: left">
     <div class="page-head tituloYapay" >
-        <h1 class="sub-title"><?php echo $title;?> </h1> 
+        <h1 class="sub-title"><?php 
+            if ($title == "") {
+                echo ("Sua compra foi finalizada.");
+            } else {
+                echo $title;
+            }        
+        ?> </h1> 
         <hr/>
     </div>
     <div>
@@ -144,9 +150,18 @@ switch ($this->getStatusId()){
                 <tr>
                     <td style="width:100%">
                         <div  class="descricaoPayment">
-                            <?php echo $descriptionPaymentTC;?><br/><br/><br/>
+                        <?php 
+                            if ($descriptionPaymentTC == "") {
+                                echo ("Volte para a página inicial");
+                            } else {
+                                echo $descriptionPaymentTC;
+
+                            }                                               
+                        ?>
+
                         </div>
-                        <h3><strong class="nomePedido">Dados do Pedido:</strong></h3>
+                        <?php if ($this->getStatusId() != NULL) {?>
+                        <br/><br/><br/><h3><strong class="nomePedido">Dados do Pedido:</strong></h3>
                         <div class="textoRetornoYapay">
                             <?php if ($this->getEnvironment() == '1') { ?>
                                 <p class="environment">Pedido em Ambiente de Teste <strong>SANDBOX</strong></p>
@@ -181,6 +196,9 @@ switch ($this->getStatusId()){
                         <br />
                         <!-- <img src="<?php echo $this->getSkinUrl('tray/checkoutapi/images/BannerYapayIntermediador890px.png'); ?>" /> -->
                     </td>
+                    <?php } else { ?>
+                        <br><br><br><a href="<?php echo $this->getBaseUrl()?>"><button class="button btn-proceed-checkout btn-checkout buttonYapay" title="Voltar Página Inicial" type="button"><span><span>Voltar</span></span></button><br /></a>
+                         <?php } ?>
                 </tr>
             </table>
     </div>

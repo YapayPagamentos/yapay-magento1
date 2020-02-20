@@ -488,7 +488,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         
 	    $sArr['token_account']= $this->getConfigData('token');
 	    // $sArr['transaction[free]']= "MAGENTO_API_v".(string) Mage::getConfig()->getNode()->modules->Tray_CheckoutApi->version;
-        $sArr['transaction[free]']= "MAGENTO_API_v2.0.9";
+        $sArr['transaction[free]']= "MAGENTO_API_v2.1.0";
         $sArr['transaction[order_number]']= $this->getConfigData('prefixo').$orderIncrementId;
 
 
@@ -632,16 +632,11 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         $xml = simplexml_load_string($res);
         $codeTc = "";
         $messageTc = "";
+        $frase = '';
+        $mensagemRetornoYapay = '';
 
         $orderId = Mage::getSingleton('checkout/session')->getLastRealOrderId();
-        // $order = Mage::getSingleton('sales/order')->loadByIncrementId($orderId);
-
-
         $order = Mage::getModel('sales/order')->loadByIncrementId(str_replace($this->getConfigData('prefixo'),'',$orderId));
-
-        $frase = '';
-
-        $mensagemRetornoYapay = '';
 
         if($xml->message_response->message == "error") {
             if (empty($xml->additional_data->transaction_id)) {
@@ -697,13 +692,15 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
     
     public function getTrayCheckoutRequest($url = "", $params = "")
     {
+
         Mage::log('URL de Request: '.$this->getTrayCheckoutUrl().$url, null, 'traycheckout.log');
         $ch = curl_init ( $this->getTrayCheckoutUrl().$url );
         
         if(is_array($params)){
             $params = http_build_query($params);
         }
-        Mage::log('Data: '.  $params, null, 'traycheckout.log');
+        
+        // Mage::log('Data: '.  $params, null, 'traycheckout.log');
         $patterns = array();
         $patterns[0] = '/card_name%5D=[\w\W]*&payment%5Bcard_number/';
         $patterns[1] = '/card_number%5D=\d+\D/';

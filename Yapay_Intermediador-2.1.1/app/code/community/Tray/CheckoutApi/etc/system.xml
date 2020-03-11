@@ -21,7 +21,7 @@
 <config>
     <tabs>
         <tray translate="label" module="checkoutapi">
-            <label>Tray Commerce</label>
+            <label>Yapay Intermediador</label>
             <sort_order>100</sort_order>
         </tray>
     </tabs>      

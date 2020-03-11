@@ -488,7 +488,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         
 	    $sArr['token_account']= $this->getConfigData('token');
 	    // $sArr['transaction[free]']= "MAGENTO_API_v".(string) Mage::getConfig()->getNode()->modules->Tray_CheckoutApi->version;
-        $sArr['transaction[free]']= "MAGENTO_API_v2.1.0";
+        $sArr['transaction[free]']= "MAGENTO_API_v2.1.1";
         $sArr['transaction[order_number]']= $this->getConfigData('prefixo').$orderIncrementId;
 
 

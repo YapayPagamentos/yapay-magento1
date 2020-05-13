@@ -235,12 +235,19 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         return false;
     }
 
+
     public function validate()
     {
         parent::validate();
         
         $errorMsg = "";
-        $quote = $this->getCheckout()->getQuote();
+        // $quote = $this->getCheckout()->getQuote();
+
+        $quote = Mage::getSingleton('checkout/session')->getQuote();
+        if (Mage::getSingleton('admin/session')->isLoggedIn()) {
+            $session = Mage::getSingleton('adminhtml/session_quote');
+            $quote = $session->getQuote();
+        }
         
         $shippingAddress = $quote->getShippingAddress();
         $billingAddress = $quote->getBillingAddress();
@@ -255,8 +262,11 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
             $errorMsg .= "Nome do comprador em branco ou inválido!!\n";
         }
         
+
+
         // Validação do CPF do cliente
-        $number_taxvat = str_replace(" ","",str_replace(".","",str_replace("-","",$quote->getCustomer()->getData("taxvat"))));
+        $number_taxvat = str_replace(" ","",str_replace(".","",str_replace("-","",str_replace("/","",$quote->getCustomerTaxvat()))));
+
         Mage::log('Validate - CPF Data: '. $number_taxvat, null, 'traycheckout.log');
         if($number_taxvat == null){
             $number_taxvat = str_replace(" ","",str_replace(".","",str_replace("-","",$billingAddress->getData("taxvat"))));
@@ -264,14 +274,24 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         if (preg_match("/[a-zA-Z]/",$number_taxvat)) {
             $errorMsg .= "CPF em branco ou inválido!!\n";
         }
-        
+
+        if ((strlen($number_taxvat) > 11) OR (strlen($number_taxvat) < 10)) {
+            $errorMsg .= "Número do CPF inválido!!\n";
+        }
+         
+
         // Validação do email do cliente
-        Mage::log('Validate - Email Data: '. $quote->getCustomer()->getEmail(), null, 'traycheckout.log');
+        Mage::log('Validate - Email Data: '. $quote->getCustomerEmail(), null, 'traycheckout.log');
         Mage::log('Validate - Email Billing Data: '. $billingAddress->getEmail(), null, 'traycheckout.log');
-        if (!filter_var($quote->getCustomer()->getEmail(), FILTER_VALIDATE_EMAIL)) {
+
+        if (!filter_var($quote->getCustomerEmail(), FILTER_VALIDATE_EMAIL)) {
             if (!filter_var($billingAddress->getEmail(), FILTER_VALIDATE_EMAIL)) {
                 $errorMsg .= "E-mail em branco ou inválido!!\n";
-            }
+            } 
+        }
+
+        if (strpos($quote->getCustomerEmail(), 'hotmai.com') !== false) {
+            $errorMsg .= "Domínio do e-mail inválido!!\n";
         }
         
         // Validação do telefone do cliente
@@ -279,15 +299,18 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         $number_contact = str_replace("(","",$number_contact);
         $number_contact = str_replace(")","",$number_contact);
         $number_contact = str_replace("-","",$number_contact);
+
         Mage::log('Validate - Phone Data: '. $number_contact, null, 'traycheckout.log');
         if (preg_match('/[a-zA-Z]/',$number_contact)) {
             $errorMsg .= "Telefone em branco ou inválido!!\n";
         }
         $type_contact = '';
-        if (preg_match('/^[0-9]{2}[5-9]{1}[0-9]{7,8}$/',$number_contact)) {
+        // if (preg_match('/^[0-9]{2}[5-9]{1}[0-9]{7,8}$/',$number_contact)) {
+        if (preg_match('/^\d{2}[5-9]{1}\d{7,}$/',$number_contact)) {
             $type_contact = "M";
         }
-        if (preg_match('/^[0-9]{2}[1-6]{1}[0-9]{7}$/',$number_contact)) {
+        // if (preg_match('/^[0-9]{2}[1-6]{1}[0-9]{7}$/',$number_contact)) {
+        if (preg_match('/^\d{2}[1-6]{1}\d{7,}$/',$number_contact)) {
             $type_contact = "H";
         }
         if (preg_match('/^0800[0-9]{6,7}$|^0300[0-9]{6,7}$/',$number_contact)) {
@@ -337,6 +360,13 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         }
 
 
+        if ($quote->getPayment()->getData('cc_type') == '') {
+            Mage::log('Validate - Forma de Pagamento em branco!', null, 'traycheckout.log');
+            $errorMsg .= "Informar uma forma de pagamento!!\n";
+        } else {
+            $cc_type = $quote->getPayment()->getData('cc_type');
+            Mage::log('Validate - Forma de Pagamento: '. $cc_type, null, 'traycheckout.log');
+        }
 
         if ($quote->getPayment()->getData('method') == 'traycheckoutapi') {
 
@@ -356,6 +386,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
             }
 
             $ccType = $quote->getPayment()->getData('cc_type');
+
             $ccNumber = str_replace(" ","",$quote->getPayment()->getData('cc_number'));
             if (!in_array($ccType, array("2", "6", "7", "14", "22", "23"))) {
                 if ($this->validateCcNum($ccNumber)) {
@@ -404,7 +435,8 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         
         if($errorMsg != ""){
             $errorMsg .= "\nVerifique as informações para finalizar a compra pelo Yapay Intermediador!";
-            Mage::throwException($errorMsg);
+            throw new Mage_Payment_Model_Info_Exception(Mage::helper('checkout')->__($errorMsg));
+            // Mage::throwException($errorMsg);
         }
         return $this;
     }
@@ -474,6 +506,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         $number_contact = str_replace(")","",$number_contact);
         $number_contact = str_replace("-","",$number_contact);
         
+
         $type_contact = "H";
         
         if (preg_match('/^[0-9]{2}[5-9]{1}[0-9]{7,8}$/',$number_contact)) {
@@ -488,7 +521,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         
 	    $sArr['token_account']= $this->getConfigData('token');
 	    // $sArr['transaction[free]']= "MAGENTO_API_v".(string) Mage::getConfig()->getNode()->modules->Tray_CheckoutApi->version;
-        $sArr['transaction[free]']= "MAGENTO_API_v2.1.1";
+        $sArr['transaction[free]']= "MAGENTO_API_v2.1.3";
         $sArr['transaction[order_number]']= $this->getConfigData('prefixo').$orderIncrementId;
 
 
@@ -584,8 +617,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
             $sArr['finger_print'] = $order->getPayment()->getData('traycheckout_finger_print');
         }
 
-
-
+        
         $sArr['payment[payment_method_id]'] = $order->getPayment()->getData('cc_type');
         $sArr['payment[split]'] = (($order->getPayment()->getData('traycheckout_split_number') == NULL)|| ($order->getPayment()->getData('traycheckout_split_number') == '0') ? '1' : $order->getPayment()->getData('traycheckout_split_number'));
         $sArr['payment[card_name]'] = $order->getPayment()->getData('cc_owner');
@@ -726,7 +758,8 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         curl_setopt ( $ch, CURLOPT_POST, 1 );
         curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
         curl_setopt ( $ch, CURLOPT_POSTFIELDS, $params);
-        curl_setopt ( $ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 );
+        curl_setopt ( $ch, CURLOPT_SSLVERSION, 6 );
+        // curl_setopt ( $ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 );
 
 
         if (!($res = curl_exec($ch))) {
@@ -760,8 +793,7 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
 
         if($this->hasErrorTrayCheckout($res)){
             $xml = simplexml_load_string($res);
-            // var_dump($xml);
-            // die();
+
             $respondeYapayValidation = $xml->error_response->validation_errors->validation_error->message_complete;
             $respondeYapayGeneral = $xml->error_response->general_errors->general_error->message;
 

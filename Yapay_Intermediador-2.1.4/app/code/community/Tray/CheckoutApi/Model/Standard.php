@@ -433,6 +433,8 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
             }
         }
         
+        $errorMsg = "";
+
         if($errorMsg != ""){
             $errorMsg .= "\nVerifique as informações para finalizar a compra pelo Yapay Intermediador!";
             throw new Mage_Payment_Model_Info_Exception(Mage::helper('checkout')->__($errorMsg));
@@ -521,12 +523,25 @@ class Tray_CheckoutApi_Model_Standard extends Mage_Payment_Model_Method_Abstract
         
 	    $sArr['token_account']= $this->getConfigData('token');
 	    // $sArr['transaction[free]']= "MAGENTO_API_v".(string) Mage::getConfig()->getNode()->modules->Tray_CheckoutApi->version;
-        $sArr['transaction[free]']= "MAGENTO_API_v2.1.3";
+        $sArr['transaction[free]']= "MAGENTO_API_v2.1.4";
         $sArr['transaction[order_number]']= $this->getConfigData('prefixo').$orderIncrementId;
 
 
-    	$sArr['customer[name]']= $order->getData("customer_firstname") . ' ' . str_replace("(pj)", "", $order->getData("customer_lastname"));
-    	$sArr['customer[cpf]']= $order->getData("customer_taxvat");
+        $sArr['customer[name]']= $order->getData("customer_firstname") . ' ' . str_replace("(pj)", "", $order->getData("customer_lastname"));
+        
+        $number_taxvat = str_replace(" ","",str_replace(".","",str_replace("-","",str_replace("/","",$order->getData("customer_taxvat")))));
+        // $sArr['customer[cpf]']= $order->getData("customer_taxvat");
+        $sArr['customer[cpf]']= $number_taxvat;
+
+        if (strlen($number_taxvat) > 10) {
+            $sArr['customer[trade_name]'] = $order->getData("customer_firstname") . ' ' . str_replace("(pj)", "", $order->getData("customer_lastname"));
+            $sArr['customer[company_name]'] = $order->getData("customer_firstname") . ' ' . str_replace("(pj)", "", $order->getData("customer_lastname"));
+        }
+
+        
+
+        
+    	// $sArr['customer[cpf]']= $order->getData("customer_taxvat");
         $sArr['customer[contacts][][number_contact]']= $number_contact;
         $sArr['customer[contacts][][type_contact]']= $type_contact; 
         $sArr['customer[email]']= $order->getData("customer_email");

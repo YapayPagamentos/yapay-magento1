@@ -3,7 +3,9 @@
 Para disponibilizar a API de Pagamento da **Yapay** como facilitador de pagamento na plataforma Magento, basta acessar o _Magento Connect Manager_ de sua loja e instalar o módulo disponível no repositório Magento Connect ou baixar o pacote disponível no site institucional da Yapay.
 
 
-> **IMPORTANTE:** Deve ser desativado o SID no Frontend. Sistema / Configuração / Web / Opção de Validação / Usar SID no Frontend deve estar **NÃO**
+#### **IMPORTANTE:** Deve ser desativado o SID no Frontend. Sistema / Configuração / Web / Opção de Validação / Usar SID no Frontend deve estar **NÃO**
+
+
 
 > **Instalação do Módulo Magento versão 1.9.x**
 

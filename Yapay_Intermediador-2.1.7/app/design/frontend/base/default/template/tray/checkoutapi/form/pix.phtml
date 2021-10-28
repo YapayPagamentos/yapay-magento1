@@ -1,0 +1,94 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to suporte@tray.net.br so we can send you a copy immediately.
+ *
+ * @category   Tray
+ * @package    Tray_CheckoutApi
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
+?>
+<fieldset class="form-list">
+    <?php 
+
+          $_code = $this->getMethodCode();
+          $_standardPD = Mage::getSingleton('checkoutapi/pix');
+          
+          $totals = Mage::getSingleton('checkout/session')->getQuote()->collectTotals();  
+          //$shippingAmount = Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingAmount();  
+          $strTcPaymentMethods = $_standardPD->getConfigData("tcPaymentMethods");
+          
+          if($strTcPaymentMethods == "" || $strTcPaymentMethods == null){
+              $tctPaymentMethods = explode(",","27");
+          }else{
+              $tctPaymentMethods = explode(",",$strTcPaymentMethods);
+          }
+    ?>  
+    <style>
+        ul li.tctPaymentMethod{
+            float: left;
+            padding: 5px;
+            width: 60px;
+            height: 60px;
+        }
+        ul li input{
+            float: left;
+            margin-right: 5px;
+        }
+        ul li img.tctPaymentFlag{
+            float: left;
+            width: 46px;
+            height: 29px;
+            background-repeat: no-repeat;
+            border-radius: 3px;
+            background-color: #f3f3f3;
+            box-shadow: 1px 1px 2px #ececec;
+            opacity:0.30;
+            -moz-opacity: 0.30;
+            filter: alpha(opacity=30);
+        }
+        ul li img.tctPaymentFlagSelected{
+            opacity:1 !important;
+            -moz-opacity: 1 !important;
+            filter: alpha(opacity=100) !important;
+        }
+        
+    </style>
+    <ul id="payment_form_<?php echo $_code ?>" style="display:none">
+        
+        <li class="forma_pagamento" style="float:left;">
+            <ul>
+                <li>
+                    <label for="tctPaymentMethod"><?php echo Mage::helper('payment')->__('Forma de pagamento') ?> <span class="required">*</span></label><br/>
+                    <input type="hidden" id="tctPaymentMethod" name="payment[traycheckout_payment_code_pix]" class="required-entry" value="27"/>
+                    <ul>
+                    <?php
+                        $imgSrc = "";
+                        foreach ($tctPaymentMethods as $idTcPayment){
+                            switch (intval($idTcPayment)){
+                                case 27: $imgSrc = "pix";break;
+                            }
+                    ?>
+                        <li class="tcPaymentMethod">
+                            <img src="<?php echo $this->getSkinUrl('tray/checkoutapi/images/pix-flag.svg') ?>" class="tctPaymentFlagSelected" id="tctPaymentFlagSelected">
+                        </li>
+                    <?php
+
+                        }
+                    ?>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    
+</fieldset>
